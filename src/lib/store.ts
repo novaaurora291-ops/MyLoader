@@ -20,6 +20,7 @@ export type Action =
   | { type: "setProject"; project: Project }
   | { type: "addLayer"; layer: Layer; index?: number }
   | { type: "addLayers"; layers: Layer[] }
+  | { type: "applyLook"; layers: Layer[] }
   | { type: "updateLayer"; id: string; patch: Partial<Layer>; key?: string }
   | { type: "updateCc"; id: string; patch: Partial<CcParams>; key?: string }
   | { type: "removeLayer"; id: string }
@@ -36,6 +37,9 @@ export type Action =
   | { type: "setPreviewScale"; scale: number }
   | { type: "undo" }
   | { type: "redo" };
+
+/** Layers created by a look / preset / Auto CC carry this id prefix so the next look replaces them. */
+export const LOOK_PREFIX = "look-";
 
 export const newId = (prefix: string) =>
   `${prefix}-${(globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2)).slice(0, 8)}`;
@@ -105,6 +109,10 @@ export function reducer(s: State, a: Action): State {
     }
     case "addLayers":
       return { ...withHistory(s, { ...p, layers: [...p.layers, ...a.layers] }), selectedId: a.layers.at(-1)?.id ?? s.selectedId };
+    case "applyLook": {
+      const kept = p.layers.filter((l) => !l.id.startsWith(LOOK_PREFIX) || l.locked);
+      return { ...withHistory(s, { ...p, layers: [...kept, ...a.layers] }), selectedId: a.layers.at(-1)?.id ?? s.selectedId };
+    }
     case "updateLayer": {
       const target = p.layers.find((l) => l.id === a.id);
       const onlyFlags = Object.keys(a.patch).every((k) => k === "locked" || k === "visible");

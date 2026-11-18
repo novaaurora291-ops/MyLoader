@@ -129,3 +129,11 @@ input[type="range"]::-webkit-slider-thumb { appearance: none; width: 13px; heigh
 .warn { background: #2a2414; color: #f3c969; }
 .err { background: #3a1a22; color: #ff9db0; }
 .ok { background: #12301f; color: #7ff0b5; }
+
+/* presets */
+.toolbar select.looks { min-width: 150px; }
+.preset-list { margin-top: 12px; max-height: 260px; overflow-y: auto; border-top: 1px solid var(--line); }
+.preset-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #1f222c; }
+.preset-item .pname { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preset-item button { padding: 3px 8px; }
+button.magic { background: linear-gradient(90deg, #ff8a3d, #ff3d8a); border: 0; font-weight: 600; color: #fff; }

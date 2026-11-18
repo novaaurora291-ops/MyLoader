@@ -8,6 +8,11 @@ import { Viewer } from "./components/Viewer";
 import { Timeline } from "./components/Timeline";
 import { Inspector } from "./components/Inspector";
 import { ExportDialog } from "./components/ExportDialog";
+import { PresetsDialog } from "./components/PresetsDialog";
+import {
+  BUILTIN_LOOKS, analyzeVideo, autoCcLayer, buildLook, buildPreset, loadUserPresets, presetFromProject, saveUserPresets,
+  type UserPreset,
+} from "./lib/looks";
 
 const ASPECTS: AspectRatio[] = ["9:16", "16:9", "1:1", "4:5"];
 
@@ -18,6 +23,9 @@ export default function App() {
   const [status, setStatus] = useState("Ready");
   const [showExport, setShowExport] = useState(false);
   const [projectPath, setProjectPath] = useState<string | null>(null);
+  const [userPresets, setUserPresets] = useState<UserPreset[]>(() => loadUserPresets());
+  const [showPresets, setShowPresets] = useState(false);
+  const [autoBusy, setAutoBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const tauri = api.isTauri();
   const selected = project.layers.find((l) => l.id === selectedId) ?? null;
@@ -115,6 +123,97 @@ export default function App() {
     }
   };
 
+  // ---- looks, presets, Auto CC ---------------------------------------------------
+  const nonVideoCount = project.layers.filter((l) => l.kind.type !== "video").length;
+
+  const applyUserPreset = (pr: UserPreset) => {
+    dispatch({ type: "applyLook", layers: buildPreset(pr, project) });
+    setStatus(`Preset "${pr.name}" applied (${pr.layers.length} layers)`);
+  };
+
+  const onLookSelect = (value: string) => {
+    if (value.startsWith("builtin:")) {
+      const look = BUILTIN_LOOKS.find((l) => l.id === value.slice(8));
+      if (!look) return;
+      dispatch({ type: "applyLook", layers: buildLook(look, project) });
+      setStatus(`Look "${look.name}" applied: ${look.description}. Tweak any layer's sliders; pick another look to swap it.`);
+    } else if (value.startsWith("user:")) {
+      const pr = userPresets.find((p) => p.name === value.slice(5));
+      if (pr) applyUserPreset(pr);
+    } else if (value === "manage") {
+      setShowPresets(true);
+    }
+  };
+
+  const savePreset = (name: string) => {
+    const list = [...userPresets.filter((p) => p.name !== name), presetFromProject(name, project)];
+    saveUserPresets(list);
+    setUserPresets(list);
+    setStatus(`Preset "${name}" saved (${nonVideoCount} layers). Find it in the Looks menu.`);
+  };
+
+  const deletePreset = (name: string) => {
+    const list = userPresets.filter((p) => p.name !== name);
+    saveUserPresets(list);
+    setUserPresets(list);
+  };
+
+  const exportPresetFile = async () => {
+    if (!tauri) return setStatus("Preset files need the desktop app");
+    const path = await api.pickPresetSave("my-look");
+    if (!path) return;
+    const pr: Project = { ...project, layers: project.layers.filter((l) => l.kind.type !== "video") };
+    await api.saveProject(path, pr);
+    setStatus(`Preset file saved: ${path}`);
+  };
+
+  const importPresetFile = async () => {
+    if (!tauri) return setStatus("Preset files need the desktop app");
+    const path = await api.pickPresetOpen();
+    if (!path) return;
+    try {
+      const p: Project = await api.loadProject(path);
+      const name = (path.split(/[\\/]/).pop() ?? "Preset").replace(/\.(mlpreset|mlproj|json)$/i, "");
+      const pr = presetFromProject(name, p);
+      const list = [...userPresets.filter((x) => x.name !== name), pr];
+      saveUserPresets(list);
+      setUserPresets(list);
+      applyUserPreset(pr);
+    } catch (e) {
+      setStatus(`Preset import failed: ${e}`);
+    }
+  };
+
+  const autoCc = async () => {
+    const v = project.layers.find((l) => l.kind.type === "video" && l.visible) ?? project.layers.find((l) => l.kind.type === "video");
+    if (!v || v.kind.type !== "video") return setStatus("Auto CC: add a video first");
+    setAutoBusy(true);
+    setStatus("Auto CC: analysing 8 frames across the clip…");
+    try {
+      let url = mediaUrls[v.id];
+      let stats = null;
+      try {
+        stats = await analyzeVideo(url);
+      } catch (e) {
+        if (!tauri || url.startsWith("blob:")) throw e;
+        url = await api.videoBlobUrl(v.kind.path);
+        setMediaUrls((m) => ({ ...m, [v.id]: url }));
+        stats = await analyzeVideo(url);
+      }
+      if (!stats) throw new Error("no frames could be read");
+      const layer = autoCcLayer(project, stats);
+      dispatch({ type: "applyLook", layers: [layer] });
+      const c = layer.cc;
+      setStatus(
+        `Auto CC from ${stats.samples} frames: exposure ${c.exposure}, contrast ${c.contrast}, highlights ${c.highlights}, shadows ${c.shadows}, saturation ${c.saturation}. Fine-tune in the inspector.`,
+      );
+    } catch (e) {
+      setStatus(`Auto CC failed: ${e}`);
+    } finally {
+      setAutoBusy(false);
+    }
+  };
+
   // ---- project files -------------------------------------------------------------
   const saveAs = async () => {
     if (!tauri) {
@@ -190,6 +289,30 @@ export default function App() {
           <button onClick={() => dispatch({ type: "addLayer", layer: newLyricsFade(project) })}>＋ Lyrics Fade</button>
           <button onClick={() => dispatch({ type: "addLayer", layer: newRectangle(project) })}>＋ Rectangle</button>
         </div>
+        <div className="group">
+          <select className="looks" value="" onChange={(e) => onLookSelect(e.target.value)} title="One-click looks (replace the previous look, keep your own layers)">
+            <option value="" disabled>🎨 Looks / Presets…</option>
+            <optgroup label="Built-in looks">
+              {BUILTIN_LOOKS.map((l) => (
+                <option key={l.id} value={`builtin:${l.id}`} title={l.description}>{l.name}</option>
+              ))}
+            </optgroup>
+            {userPresets.length > 0 && (
+              <optgroup label="My presets">
+                {userPresets.map((p) => (
+                  <option key={p.name} value={`user:${p.name}`}>{p.name}</option>
+                ))}
+              </optgroup>
+            )}
+            <optgroup label="Manage">
+              <option value="manage">💾 Save / manage presets…</option>
+            </optgroup>
+          </select>
+          <button className="magic" onClick={autoCc} disabled={autoBusy} title="Analyse the video and set the CC sliders automatically">
+            {autoBusy ? "Analysing…" : "✨ Auto CC"}
+          </button>
+          <button onClick={() => setShowPresets(true)} title="Save the current CC stack as a preset">💾 Save Preset</button>
+        </div>
         <div className="group aspect">
           {ASPECTS.map((a) => (
             <button key={a} className={currentAspect === a ? "active" : ""} onClick={() => dispatch({ type: "setAspect", aspect: a })}>
@@ -226,6 +349,18 @@ export default function App() {
       <Timeline project={project} selectedId={selectedId} time={time} dispatch={dispatch} />
       <footer className="status">{status}</footer>
       {showExport && <ExportDialog project={project} onClose={() => setShowExport(false)} />}
+      {showPresets && (
+        <PresetsDialog
+          presets={userPresets}
+          layerCount={nonVideoCount}
+          onSave={savePreset}
+          onDelete={deletePreset}
+          onApply={(p) => { applyUserPreset(p); setShowPresets(false); }}
+          onExportFile={exportPresetFile}
+          onImportFile={() => { setShowPresets(false); importPresetFile(); }}
+          onClose={() => setShowPresets(false)}
+        />
+      )}
     </div>
   );
 }

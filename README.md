@@ -117,11 +117,13 @@ UI-only (no Rust, browser preview, export disabled): `npm run dev` → http://lo
 
 1. **＋ Video** — pick your raw video; it goes on the bottom track and is auto-filled to the canvas.
 2. **＋ AM Preset (.xml)** — import an Alight Motion preset (try `presets\hdr-cc-lyrics.xml`). Its layers stack above the video, rescaled to your canvas.
-3. Or **＋ Adjustment** / **＋ Lyrics Fade** / **＋ Rectangle**.
-4. Select a layer → move the sliders in the right panel; preview updates live on the GPU.
-5. **9:16 / 16:9 / 1:1 / 4:5** → change canvas, then **⤢ Fill All Layers to Composition**.
-6. Timeline: 👁 hide, 🔒 lock, drag ⠿ to reorder, drag clips to move in time, click the ruler to scrub.
-7. **Export ⇪** → 1080p / 4K, 60 fps, encoder Auto (NVENC → AMF → QSV → x264).
+3. **No XML? No problem.** Use **🎨 Looks / Presets** (one click: *HDR CC (Lyrics)*, *Cinematic*, *Vivid Pop*, *Moody Dark*, *Soft Glow*, *B&W Contrast*) or **✨ Auto CC**, which analyses 8 frames of your video and sets exposure, contrast, highlights, shadows and saturation for you. Picking another look replaces the previous one; your own layers stay.
+4. **💾 Save Preset** — saves your current CC stack (all non-video layers) by name; it appears under *My presets* in the Looks menu for every next video. *Export file…* / *Import file…* share presets as `.mlpreset` files.
+5. Or build by hand: **＋ Adjustment** / **＋ Lyrics Fade** / **＋ Rectangle**.
+6. Select a layer → move the sliders in the right panel; preview updates live on the GPU.
+7. **9:16 / 16:9 / 1:1 / 4:5** → change canvas, then **⤢ Fill All Layers to Composition**.
+8. Timeline: 👁 hide, 🔒 lock, drag ⠿ to reorder, drag clips to move in time, click the ruler to scrub.
+9. **Export ⇪** → 1080p / 4K, 60 fps, encoder Auto (NVENC → AMF → QSV → x264).
 
 Shortcuts: `Space` play/pause · `Ctrl+Z` / `Ctrl+Y` undo/redo · `Ctrl+S` save · `Del` delete layer · `H` hide · `L` lock.
 Projects save as `.mlproj` (JSON, same format the CLI uses).
@@ -182,6 +184,8 @@ Flags: `--res 1080|1440|2160|native`, `--fps`, `--encoder auto|nvenc|hevc_nvenc|
 | `GPU renderer unavailable` | update drivers; try `set WGPU_BACKEND=vulkan` or `dx12`; CPU fallback still works |
 | `link.exe not found` | install VS 2022 Build Tools with "Desktop development with C++" |
 | Preview black but export fine | the app automatically retries the preview with an in-memory copy of the video; very large files may take a moment |
+| `npm.ps1 cannot be loaded because running scripts is disabled` | run once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned -Force` (or use `npm.cmd`) |
+| Saved presets missing in the installed app | dev (`tauri dev`) and installed builds keep separate preset lists; move them with *Export file…* / *Import file…* |
 | Vite/Node error | Node ≥ 20.19 required: `winget upgrade OpenJS.NodeJS.LTS` |
 
 ## Notes on Alight Motion compatibility

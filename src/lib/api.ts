@@ -30,6 +30,16 @@ export async function pickProjectSave(): Promise<string | null> {
   return await save({ defaultPath: "project.mlproj", filters: [{ name: "MyLoader project", extensions: ["mlproj"] }] });
 }
 
+export async function pickPresetSave(name: string): Promise<string | null> {
+  const safe = name.replace(/[^\w\- ]+/g, "").trim() || "preset";
+  return await save({ defaultPath: `${safe}.mlpreset`, filters: [{ name: "MyLoader preset", extensions: ["mlpreset"] }] });
+}
+
+export async function pickPresetOpen(): Promise<string | null> {
+  const r = await open({ multiple: false, filters: [{ name: "MyLoader preset / project", extensions: ["mlpreset", "mlproj", "json"] }] });
+  return typeof r === "string" ? r : null;
+}
+
 export async function pickExportPath(): Promise<string | null> {
   return await save({ defaultPath: "export.mp4", filters: [{ name: "MP4 video", extensions: ["mp4"] }] });
 }
