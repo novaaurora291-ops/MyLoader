@@ -1,0 +1,29 @@
+[package]
+name = "myloader-engine"
+description = "GPU colour-grading / compositing engine (wgpu + FFmpeg) with an Alight Motion XML preset parser"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "myloader_engine"
+path = "src/lib.rs"
+
+[[bin]]
+name = "mlcli"
+path = "src/bin/mlcli.rs"
+
+[dependencies]
+anyhow = "1.0.104"
+bytemuck = { version = "1.25.2", features = ["derive"] }
+crossbeam-channel = "0.5.17"
+pollster = "1.0.2"
+rayon = "1.12.0"
+roxmltree = "0.21.2"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+thiserror = "2.0.21"
+wgpu = "30.0.2"
+
+[dev-dependencies]
+naga = { version = "30.0.2", features = ["wgsl-in"] }

@@ -1,0 +1,12 @@
+mlcli - MyLoader engine command line
+
+  mlcli info                                   FFmpeg, GPU adapter, tested hardware encoders
+  mlcli parse  <preset.xml> [--json]           Inspect an Alight Motion XML preset
+  mlcli new    <video> -o project.json         Create a project from a video
+               [--aspect 9:16|16:9|1:1|4:5] [--preset a.xml]... [--fit cover|contain|stretch]
+  mlcli fill   <project.json> [--aspect 16:9] [--fit cover]   Fill all layers to composition
+  mlcli still  <project.json> -o frame.png [--t 1.5] [--res 1080] [--cpu]
+  mlcli export <project.json> -o out.mp4 [--res 1080|1440|2160|native] [--fps 60]
+               [--encoder auto|nvenc|hevc_nvenc|amf|hevc_amf|qsv|hevc_qsv|cpu]
+               [--quality 19] [--bitrate 40000] [--no-audio] [--cpu]
+  mlcli bench  [--res 2160] [--frames 120] [--cpu]   Renderer throughput benchmark

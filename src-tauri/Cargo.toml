@@ -1,0 +1,21 @@
+[package]
+name = "myloader"
+description = "MyLoader - GPU colour grading & compositing (Tauri desktop app)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+myloader-engine = { path = "../crates/engine" }
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+
+[features]
+# Required by `tauri dev` / `tauri build`; do not remove.
+custom-protocol = ["tauri/custom-protocol"]

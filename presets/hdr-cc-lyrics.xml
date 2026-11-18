@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Sample Alight Motion style HDR CC preset for MyLoader (9:16, 30 fps).
+     Layer order = z-order (first = back). Same structure Alight Motion 5.x exports. -->
+<scene title="HDR CC + Lyrics" width="1080" height="1920" exportWidth="1080" exportHeight="1920"
+       precompose="dynamicResolution" bgcolor="#ff000000" totalTime="15000" fps="30"
+       modifiedTime="1763450000000" amver="1028425" ffver="107" type="preset"
+       am="com.alightcreative.motion/5.0.273.1028425" amplatform="android">
+
+  <media uri="am-internal:///placeholder.mp4" filename="placeholder.mp4" title="Your video" type="video/mp4" width="1080" height="1920" />
+
+  <!-- Media placeholder: replaced by the user's own video in MyLoader -->
+  <shape id="100" label="Your Video" startTime="0" endTime="15000" fillType="media" fillVideo="am-internal:///placeholder.mp4" mediaFillMode="fill" s=".rect">
+    <transform><location value="540.000000,960.000000,0.000000" /><scale value="10.800000,19.200000" /></transform>
+  </shape>
+
+  <!-- HDR tone: recover highlights, lift shadows, a touch of exposure -->
+  <shape id="101" label="HDR Tone" startTime="0" endTime="15000" fillType="color" mediaFillMode="stretch" s=".rect">
+    <transform>
+      <location value="540.000000,960.000000,0.000000" />
+      <scale value="10.800000,19.200000" />
+    </transform>
+    <effect id="com.alightcreative.effects.lift" locallyApplied="true">
+      <property name="fill" type="float" value="0.000000" />
+    </effect>
+    <effect id="com.alightcreative.effects.highlightshadow" locallyApplied="true">
+      <property name="highlights" type="float" value="0.650000" />
+      <property name="shadows" type="float" value="1.400000" />
+    </effect>
+    <effect id="com.alightcreative.effects.exposure" locallyApplied="true">
+      <property name="exposure" type="float" value="0.250000" />
+    </effect>
+  </shape>
+
+  <!-- Contrast + saturation pop -->
+  <shape id="102" label="Contrast Pop" startTime="0" endTime="15000" fillType="color" mediaFillMode="stretch" s=".rect">
+    <transform>
+      <location value="540.000000,960.000000,0.000000" />
+      <scale value="10.800000,19.200000" />
+    </transform>
+    <effect id="com.alightcreative.effects.lift" locallyApplied="true">
+      <property name="fill" type="float" value="0.000000" />
+    </effect>
+    <effect id="com.alightcreative.effects.brightcont2" locallyApplied="true">
+      <property name="brightness" type="float" value="0.020000" />
+      <property name="contrast" type="float" value="0.300000" />
+    </effect>
+    <effect id="com.alightcreative.effects.coloradj" locallyApplied="true">
+      <property name="saturation" type="float" value="0.250000" />
+    </effect>
+  </shape>
+
+  <!-- Bloom: blurred copy screened over the image -->
+  <shape id="103" label="Bloom" startTime="0" endTime="15000" fillType="color" blending="screen" mediaFillMode="stretch" s=".rect">
+    <transform>
+      <location value="540.000000,960.000000,0.000000" />
+      <scale value="10.800000,19.200000" />
+      <opacity value="0.350000" />
+    </transform>
+    <effect id="com.alightcreative.effects.lift" locallyApplied="true">
+      <property name="fill" type="float" value="0.000000" />
+    </effect>
+    <effect id="com.alightcreative.effects.gaussianblur" locallyApplied="true">
+      <property name="strength" type="float" value="0.900000" />
+    </effect>
+    <effect id="com.alightcreative.effects.vignette" locallyApplied="true">
+      <property name="strength" type="float" value="0.400000" />
+      <property name="feather" type="float" value="0.600000" />
+    </effect>
+  </shape>
+
+  <!-- Bottom black fade so lyrics stay readable -->
+  <shape id="104" label="Lyrics Fade" startTime="0" endTime="15000" fillType="gradient" mediaFillMode="stretch" s=".rect">
+    <transform>
+      <location value="540.000000,1570.000000,0.000000" />
+      <scale value="10.800000,7.000000" />
+    </transform>
+    <gradient type="linear" startColor="#00000000" endColor="#e6000000" start="0.500000,0.000000" end="0.500000,1.000000" />
+  </shape>
+
+  <!-- Warm overlay tint -->
+  <shape id="105" label="Warm Tint" startTime="0" endTime="15000" fillType="color" blending="overlay" mediaFillMode="stretch" s=".rect">
+    <transform>
+      <location value="540.000000,960.000000,0.000000" />
+      <scale value="10.800000,19.200000" />
+      <opacity value="0.180000" />
+    </transform>
+    <fillColor value="#ffff9a3c" />
+  </shape>
+</scene>
